@@ -1,0 +1,307 @@
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(2, 6, 23, 0.85);
+  backdrop-filter: blur(8px);
+  animation: fadeIn 0.15s ease-out;
+}
+
+.modal {
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 1rem;
+  max-width: 32rem;
+  width: 100%;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #1e293b;
+  background: rgba(2, 6, 23, 0.6);
+}
+
+.modal-header > svg {
+  color: #34d399;
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+}
+
+.modal-header h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  font-family: 'Space Grotesk', sans-serif;
+  flex: 1;
+  margin-left: 0.5rem;
+}
+
+.modal-header > div {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.modal-header button {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0.25rem;
+  transition: all 0.15s;
+}
+
+.modal-header button:hover {
+  color: #fff;
+}
+
+.modal-body {
+  padding: 1rem 1.25rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Notifications */
+.notif-item {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid #1e293b;
+  margin-bottom: 0.5rem;
+  transition: all 0.15s;
+}
+
+.notif-item.unread {
+  background: rgba(2, 6, 23, 0.6);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.notif-item.read {
+  background: rgba(2, 6, 23, 0.3);
+}
+
+.notif-item .icon {
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+.notif-item .icon svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.notif-item .icon svg.text-emerald-400 { color: #34d399; }
+.notif-item .icon svg.text-rose-400 { color: #fb7185; }
+.notif-item .icon svg.text-amber-400 { color: #fbbf24; }
+.notif-item .icon svg.text-blue-400 { color: #60a5fa; }
+
+.notif-item h4 {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.notif-item p {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.notif-item span {
+  font-size: 0.625rem;
+  color: #64748b;
+  font-family: monospace;
+}
+
+/* Emails modal (larger) */
+.emails-modal {
+  max-width: 56rem;
+  height: 85vh;
+}
+
+.emails-modal .modal-body {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 1rem;
+  padding: 1rem;
+  height: 100%;
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .emails-modal .modal-body {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+}
+
+.email-list {
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+.email-item {
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  background: rgba(2, 6, 23, 0.6);
+  border: 1px solid #1e293b;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.email-item.active {
+  border-color: rgba(16, 185, 129, 0.5);
+  background: rgba(2, 6, 23, 0.9);
+}
+
+.email-item:hover {
+  background: rgba(15, 23, 42, 0.6);
+}
+
+.email-item strong {
+  color: #fff;
+  font-size: 0.75rem;
+}
+
+.email-item > div:last-child {
+  font-size: 0.6875rem;
+  color: #94a3b8;
+}
+
+.email-view {
+  overflow-y: auto;
+  padding: 0 0.5rem;
+}
+
+.email-view h4 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  font-family: 'Space Grotesk', sans-serif;
+  margin-bottom: 0.5rem;
+}
+
+.email-view > div {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin-bottom: 0.25rem;
+}
+
+.email-view pre {
+  white-space: pre-wrap;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.75rem;
+  color: #e2e8f0;
+  background: rgba(2, 6, 23, 0.6);
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid #1e293b;
+  margin: 0.5rem 0;
+  line-height: 1.6;
+}
+
+.card-preview {
+  background: rgba(2, 6, 23, 0.6);
+  border: 1px solid #1e293b;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  margin: 0.5rem 0;
+  font-size: 0.75rem;
+  color: #e2e8f0;
+}
+
+.card-preview a {
+  color: #34d399;
+  text-decoration: none;
+  margin-left: 0.5rem;
+}
+
+.card-preview a:hover {
+  text-decoration: underline;
+}
+
+/* Settings modal */
+.settings-modal {
+  max-width: 28rem;
+}
+
+.settings-modal .modal-body > div {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(30, 41, 59, 0.5);
+  font-size: 0.75rem;
+}
+
+.settings-modal .modal-body > div span:first-child {
+  color: #94a3b8;
+}
+
+.settings-modal .modal-body > div span:last-child {
+  color: #e2e8f0;
+  font-weight: 500;
+}
+
+.security-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.75rem;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  font-size: 0.75rem;
+  margin: 0.5rem 0;
+}
+
+.logout-btn {
+  width: 100%;
+  padding: 0.625rem;
+  border-radius: 0.75rem;
+  background: rgba(244, 63, 94, 0.2);
+  border: 1px solid rgba(244, 63, 94, 0.3);
+  color: #fb7185;
+  font-weight: 700;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.logout-btn:hover {
+  background: rgba(244, 63, 94, 0.4);
+}
+
+.empty {
+  text-align: center;
+  padding: 2rem 0;
+  color: #94a3b8;
+  font-size: 0.75rem;
+}
+
+.empty svg {
+  color: #475569;
+  width: 2rem;
+  height: 2rem;
+  margin: 0 auto 0.5rem;
+}

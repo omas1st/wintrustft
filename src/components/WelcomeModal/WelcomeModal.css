@@ -1,0 +1,186 @@
+.welcome-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(2, 6, 23, 0.85);
+  backdrop-filter: blur(8px);
+  animation: fadeIn 0.2s ease-out;
+}
+
+.welcome-modal {
+  background: #0f172a;
+  border: 1px solid rgba(30, 41, 59, 0.8);
+  border-radius: 1rem;
+  max-width: 28rem;
+  width: 100%;
+  padding: 1.5rem 2rem;
+  text-align: center;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  position: relative;
+  overflow: hidden;
+}
+
+.welcome-modal::before {
+  content: '';
+  position: absolute;
+  top: -6rem;
+  right: -6rem;
+  width: 12rem;
+  height: 12rem;
+  background: rgba(16, 185, 129, 0.05);
+  border-radius: 50%;
+  filter: blur(64px);
+  pointer-events: none;
+}
+
+.welcome-modal .icon {
+  width: 4rem;
+  height: 4rem;
+  margin: 0 auto 1rem;
+  border-radius: 1rem;
+  background: linear-gradient(to top right, #10b981, #2dd4bf);
+  padding: 1px;
+  box-shadow: 0 0 30px rgba(16, 185, 129, 0.3);
+}
+
+.welcome-modal .icon > div {
+  width: 100%;
+  height: 100%;
+  background: #020617;
+  border-radius: 0.9375rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.welcome-modal .icon svg {
+  color: #34d399;
+  width: 2rem;
+  height: 2rem;
+  animation: pulse 2s infinite;
+}
+
+.welcome-modal h2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #fff;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.welcome-modal > p {
+  font-size: 0.875rem;
+  color: #94a3b8;
+  margin: 0.5rem 0 1.5rem;
+  line-height: 1.6;
+}
+
+.welcome-modal > p strong {
+  color: #34d399;
+}
+
+.account-box {
+  background: rgba(2, 6, 23, 0.9);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.account-box > span {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #34d399;
+}
+
+.account-box > div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+}
+
+.account-box .number {
+  font-size: 1.75rem;
+  font-weight: 900;
+  color: #fff;
+  font-family: monospace;
+  letter-spacing: 0.05em;
+  background: rgba(2, 6, 23, 0.5);
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid #1e293b;
+}
+
+.account-box button {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 0.75rem;
+  transition: all 0.15s;
+}
+
+.account-box button:hover {
+  background: #1e293b;
+  color: #34d399;
+}
+
+.copied {
+  font-size: 0.6875rem;
+  color: #34d399;
+  animation: pulse 1s infinite;
+}
+
+.account-box > p {
+  font-size: 0.6875rem;
+  color: #94a3b8;
+  margin-top: 0.5rem;
+}
+
+.security-note {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.75rem;
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid rgba(30, 41, 59, 0.5);
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin-bottom: 1.5rem;
+}
+
+.security-note svg {
+  color: #34d399;
+  flex-shrink: 0;
+}
+
+.welcome-modal button:last-child {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  background: linear-gradient(to right, #10b981, #14b8a6);
+  border: none;
+  color: #020617;
+  font-weight: 700;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.25);
+}
+
+.welcome-modal button:last-child:hover {
+  background: linear-gradient(to right, #059669, #0d9488);
+}

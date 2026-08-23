@@ -1,0 +1,457 @@
+.dashboard {
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 1rem 0.75rem;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .dashboard {
+    padding: 1.5rem 1.5rem;
+  }
+}
+
+/* Freeze warning */
+.freeze-warning {
+  background: rgba(120, 53, 15, 0.5);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  border-radius: 1rem;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+}
+
+@media (min-width: 640px) {
+  .freeze-warning {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.freeze-warning > svg {
+  color: #fbbf24;
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+}
+
+.freeze-warning h3 {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #fcd34d;
+}
+
+.freeze-warning p {
+  font-size: 0.75rem;
+  color: #fde68a;
+}
+
+.freeze-warning button {
+  padding: 0.625rem 1rem;
+  background: #f59e0b;
+  border: none;
+  border-radius: 0.75rem;
+  color: #020617;
+  font-weight: 700;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.2);
+  white-space: nowrap;
+}
+
+.freeze-warning button:hover {
+  background: #fbbf24;
+}
+
+/* Dashboard header */
+.dashboard-header {
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid #1e293b;
+  border-radius: 1rem;
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(8px);
+  margin-bottom: 1.5rem;
+}
+
+.user-greeting {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.user-greeting .avatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 1rem;
+  background: linear-gradient(to top right, #10b981, #2dd4bf);
+  padding: 1px;
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+  flex-shrink: 0;
+}
+
+.user-greeting .avatar > div {
+  width: 100%;
+  height: 100%;
+  background: #020617;
+  border-radius: 0.9375rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #34d399;
+}
+
+.user-greeting h1 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  font-family: 'Space Grotesk', sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (min-width: 640px) {
+  .user-greeting h1 {
+    font-size: 1.25rem;
+  }
+}
+
+.account-info {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  flex-wrap: wrap;
+}
+
+.account-number {
+  font-family: monospace;
+  font-weight: 700;
+  color: #e2e8f0;
+  background: #020617;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  border: 1px solid #1e293b;
+}
+
+.account-info button {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 0.5rem;
+  transition: all 0.15s;
+}
+
+.account-info button:hover {
+  background: #1e293b;
+  color: #34d399;
+}
+
+.copied {
+  font-size: 0.625rem;
+  color: #34d399;
+  animation: pulse 1s infinite;
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.375rem;
+  flex-shrink: 0;
+}
+
+.header-actions .icon-btn {
+  padding: 0.5rem;
+  border-radius: 0.75rem;
+  background: #020617;
+  border: 1px solid #1e293b;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.15s;
+  position: relative;
+}
+
+.header-actions .icon-btn:hover {
+  color: #34d399;
+}
+
+/* Balance card */
+.balance-card {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(to bottom right, #0f172a, rgba(15, 23, 42, 0.95), #020617);
+  border: 1px solid #1e293b;
+  border-radius: 1.5rem;
+  padding: 1rem 1.5rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  margin-bottom: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .balance-card {
+    padding: 1.75rem 2rem;
+  }
+}
+
+.balance-card::before {
+  content: '';
+  position: absolute;
+  top: -2rem;
+  right: -2rem;
+  width: 16rem;
+  height: 16rem;
+  background: rgba(16, 185, 129, 0.1);
+  border-radius: 50%;
+  filter: blur(64px);
+  pointer-events: none;
+}
+
+.balance-card::after {
+  content: '';
+  position: absolute;
+  bottom: -3rem;
+  left: 30%;
+  width: 12rem;
+  height: 12rem;
+  background: rgba(45, 212, 191, 0.05);
+  border-radius: 50%;
+  filter: blur(48px);
+  pointer-events: none;
+}
+
+.balance-info {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .balance-info {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.balance-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.balance-label button {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 0.25rem;
+}
+
+.balance-label button:hover {
+  color: #94a3b8;
+}
+
+.balance-amount {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #fff;
+  font-family: 'Space Grotesk', sans-serif;
+  letter-spacing: -0.025em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+@media (min-width: 640px) {
+  .balance-amount {
+    font-size: 2.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .balance-amount {
+    font-size: 3rem;
+  }
+}
+
+.currency {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.2);
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.account-status {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding-top: 0.25rem;
+}
+
+.account-status .frozen {
+  color: #fbbf24;
+  font-weight: 600;
+}
+
+.account-status .active {
+  color: #34d399;
+  font-weight: 600;
+}
+
+.balance-quick-info {
+  background: rgba(2, 6, 23, 0.8);
+  border: 1px solid rgba(30, 41, 59, 0.8);
+  border-radius: 1rem;
+  padding: 0.75rem 1rem;
+  width: 100%;
+  max-width: 18rem;
+  margin-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .balance-quick-info {
+    margin-top: 0;
+  }
+}
+
+.balance-quick-info > div {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+}
+
+.balance-quick-info span:first-child {
+  color: #94a3b8;
+}
+
+.balance-quick-info span:last-child {
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.balance-quick-info span:last-child:last-of-type {
+  color: #2dd4bf;
+}
+
+/* Quick actions */
+.quick-actions h2 {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+  padding: 0 0.25rem;
+  margin-bottom: 0.625rem;
+}
+
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .action-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .action-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+.action-grid button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 0.75rem;
+  border-radius: 1rem;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid #1e293b;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.action-grid button:hover {
+  border-color: rgba(16, 185, 129, 0.5);
+  background: rgba(30, 41, 59, 0.9);
+}
+
+.action-grid button > svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #34d399;
+}
+
+.action-grid button span {
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: #fff;
+}
+
+.action-grid button small {
+  font-size: 0.625rem;
+  color: #94a3b8;
+  display: block;
+  margin-top: 0.125rem;
+}
+
+/* Carousel */
+.dashboard-carousel {
+  margin-top: 1.5rem;
+  padding-top: 0.25rem;
+}
+
+.dashboard-carousel h2 {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+  padding: 0 0.25rem;
+  margin-bottom: 0.5rem;
+}
