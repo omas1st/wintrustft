@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { executeTransfer, getSettings, getAdminUsers } from '../../services/api';
+import { executeTransfer, getSettings, findUserByAccountNumber } from '../../services/api';
 import toast from 'react-hot-toast';
 import confetti from 'canvas-confetti';
 import {
@@ -22,7 +22,6 @@ export const TransferView = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [settings, setSettings] = useState(null);
-  const [users, setUsers] = useState([]);
   const [transferAmount, setTransferAmount] = useState('');
   const [targetAccount, setTargetAccount] = useState('');
   const [foundRecipient, setFoundRecipient] = useState(null);
@@ -33,6 +32,8 @@ export const TransferView = () => {
   const [activeTxDetails, setActiveTxDetails] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
   const [successModal, setSuccessModal] = useState(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const debounceTimer = useRef(null);
 
   const amountNum = parseFloat(transferAmount) || 0;
   const isInsufficient = amountNum > (user?.balance || 0);
@@ -41,39 +42,63 @@ export const TransferView = () => {
     getSettings().then(data => {
       if (data.success) setSettings(data.settings);
     }).catch(() => {});
-    getAdminUsers().then(data => {
-      if (data.success) setUsers(data.users);
-    }).catch(() => {});
   }, []);
 
-  // Live search for recipient
+  // Live search for recipient using API
   useEffect(() => {
     const clean = targetAccount.trim();
-    if (clean.length >= 7) {
-      setSearchStatus('searching');
-      if (clean === user?.accountNumber) {
-        setSearchStatus('self');
-        setFoundRecipient(null);
-        return;
-      }
-      const match = users.find(u => u.accountNumber === clean);
-      if (match) {
-        setFoundRecipient(match);
-        setSearchStatus('found');
-      } else {
-        setFoundRecipient(null);
-        setSearchStatus('notFound');
-      }
-    } else {
+    // Clear any pending debounce
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+      debounceTimer.current = null;
+    }
+
+    if (clean.length < 7) {
       setFoundRecipient(null);
       setSearchStatus(clean.length > 0 ? 'searching' : 'idle');
+      return;
     }
-  }, [targetAccount, user, users]);
+
+    if (clean === user?.accountNumber) {
+      setFoundRecipient(null);
+      setSearchStatus('self');
+      return;
+    }
+
+    setSearchStatus('searching');
+    setIsSearching(true);
+
+    // Debounce API call by 300ms to avoid excessive requests
+    debounceTimer.current = setTimeout(async () => {
+      try {
+        const result = await findUserByAccountNumber(clean);
+        if (result.success && result.user) {
+          setFoundRecipient(result.user);
+          setSearchStatus('found');
+        } else {
+          setFoundRecipient(null);
+          setSearchStatus('notFound');
+        }
+      } catch (err) {
+        console.error('Account lookup error:', err);
+        setFoundRecipient(null);
+        setSearchStatus('notFound');
+      } finally {
+        setIsSearching(false);
+      }
+    }, 300);
+
+    return () => {
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
+      }
+    };
+  }, [targetAccount, user]);
 
   const minTransfer = settings?.minTransferAmount || 10;
   const maxTransfer = settings?.maxTransferAmount || 1000000;
 
-  // Processing timer
+  // Processing timer (unchanged)
   useEffect(() => {
     if (!isProcessing) return;
     const totalDurationMs = 10000;
@@ -88,11 +113,9 @@ export const TransferView = () => {
             setIsProcessing(false);
             if (!activeTxDetails) return;
 
-            // Check if account is frozen or tax needed
             const isAccountFrozen = user?.isFrozen || (!user?.hasPaidUnfreeze && (user?.pendingWithdrawalAmount || 0) > 0);
             if (isAccountFrozen) {
               toast.error('Transfer failed – account frozen.');
-              // Navigate to unfreeze page
               navigate('/unfreeze-account');
               return;
             }
@@ -102,7 +125,6 @@ export const TransferView = () => {
               return;
             }
 
-            // Execute transfer
             executeTransfer(user.id, activeTxDetails.targetAccount, activeTxDetails.amount)
               .then(() => {
                 confetti({ particleCount: 60, spread: 60, origin: { y: 0.6 } });
@@ -225,6 +247,7 @@ export const TransferView = () => {
                 onChange={(e) => setTargetAccount(e.target.value.replace(/\D/g, ''))}
                 required
               />
+              {isSearching && <span className="searching-spinner">⋯</span>}
             </div>
             {searchStatus === 'found' && foundRecipient && (
               <div className="recipient-found">

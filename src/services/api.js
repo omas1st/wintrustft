@@ -61,3 +61,8 @@ export const getCloudData = () => axios.get('/api/cloud/data').then(res => res.d
 
 // ========== UPLOAD ==========
 export const uploadImage = (image, folder) => axios.post('/api/upload', { image, folder }).then(res => res.data);
+
+// ========== USER (authenticated) ==========
+export const findUserByAccountNumber = (accountNumber) => {
+  return axios.get(`/api/user/account/${accountNumber}`).then(res => res.data);
+};
