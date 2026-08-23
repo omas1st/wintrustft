@@ -47,7 +47,6 @@ export const TransferView = () => {
   // Live search for recipient using API
   useEffect(() => {
     const clean = targetAccount.trim();
-    // Clear any pending debounce
     if (debounceTimer.current) {
       clearTimeout(debounceTimer.current);
       debounceTimer.current = null;
@@ -68,7 +67,6 @@ export const TransferView = () => {
     setSearchStatus('searching');
     setIsSearching(true);
 
-    // Debounce API call by 300ms to avoid excessive requests
     debounceTimer.current = setTimeout(async () => {
       try {
         const result = await findUserByAccountNumber(clean);
@@ -98,7 +96,7 @@ export const TransferView = () => {
   const minTransfer = settings?.minTransferAmount || 10;
   const maxTransfer = settings?.maxTransferAmount || 1000000;
 
-  // Processing timer (unchanged)
+  // Processing timer
   useEffect(() => {
     if (!isProcessing) return;
     const totalDurationMs = 10000;
@@ -165,7 +163,8 @@ export const TransferView = () => {
     setProgress(0);
     setProcessingStage('🔐 Authenticating Security Token...');
     setIsProcessing(true);
-    toast.info('Transfer initiated, processing...');
+    // ✅ FIX: toast.info() → toast() with icon
+    toast('Transfer initiated, processing...', { icon: '⏳' });
   };
 
   return (
@@ -197,10 +196,12 @@ export const TransferView = () => {
       {/* Success Modal */}
       {successModal?.open && (
         <div className="success-modal">
-          <div><CheckCircle2 /></div>
-          <h3>Transfer Successful!</h3>
-          <p>${successModal.amount.toLocaleString()} sent to {successModal.receiverName}.</p>
-          <button onClick={() => { setSuccessModal(null); navigate('/dashboard'); }}>Return</button>
+          <div className="success-modal-card">
+            <div className="success-icon"><CheckCircle2 /></div>
+            <h3>Transfer Successful!</h3>
+            <p>${successModal.amount.toLocaleString()} sent to <strong>{successModal.receiverName}</strong>.</p>
+            <button onClick={() => { setSuccessModal(null); navigate('/dashboard'); }}>Return</button>
+          </div>
         </div>
       )}
 

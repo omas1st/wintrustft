@@ -11,11 +11,13 @@
   gap: 2rem;
 }
 
+/* No change to row on desktop – keep vertical */
 @media (min-width: 1024px) {
   .auth-view {
-    flex-direction: row;
-    align-items: flex-start;
+    flex-direction: column;          /* stays vertical */
+    align-items: center;
     padding: 2rem;
+    gap: 2.5rem;
   }
 }
 
@@ -24,6 +26,7 @@
   flex: 1;
   padding-top: 0.5rem;
   max-width: 600px;
+  width: 100%;              /* ensure full width within container */
 }
 
 .hero-badge {
@@ -325,5 +328,6 @@
 @media (min-width: 1024px) {
   .auth-carousel {
     margin-top: 3rem;
+    max-width: 600px;     /* optional: match hero width for nicer stacking */
   }
 }
