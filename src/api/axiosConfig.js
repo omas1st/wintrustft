@@ -1,13 +1,28 @@
 import axios from 'axios';
 
-// Ensure baseURL is http://localhost:5000 and strip any trailing '/api'
-let API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-if (API_URL.endsWith('/api')) {
-  API_URL = API_URL.slice(0, -4);
-}
+// Determine the correct backend API URL:
+// - In local development, use http://localhost:5000
+// - In production (Vercel/Netlify), use the deployed backend URL
+const getApiUrl = () => {
+  // If REACT_APP_API_URL is set, use it (allows override)
+  if (process.env.REACT_APP_API_URL) {
+    return process.env.REACT_APP_API_URL.replace(/\/$/, ''); // remove trailing slash
+  }
+  // If running on localhost, use local backend
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    return 'http://localhost:5000';
+  }
+  // Otherwise, use the production backend
+  return 'https://wintrustbk.vercel.app';
+};
+
+const API_URL = getApiUrl();
+
+// Strip trailing '/api' if present
+const baseURL = API_URL.endsWith('/api') ? API_URL.slice(0, -4) : API_URL;
 
 const axiosInstance = axios.create({
-  baseURL: API_URL,
+  baseURL,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
