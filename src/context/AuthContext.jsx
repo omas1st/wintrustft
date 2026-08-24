@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { me, logout, loginUser, registerUser } from '../services/api';
 import toast from 'react-hot-toast';
 
@@ -10,6 +10,9 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [newlyRegistered, setNewlyRegistered] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const refreshInterval = useRef(null);
+  const lastRefreshTime = useRef(Date.now());
 
   // Check session on mount
   useEffect(() => {
@@ -35,7 +38,6 @@ export const AuthProvider = ({ children }) => {
     };
     checkSession();
 
-    // Listen for unauthorized events from axios interceptor
     const handleUnauthorized = () => {
       localStorage.removeItem('wintrust_token');
       setUser(null);
@@ -46,6 +48,111 @@ export const AuthProvider = ({ children }) => {
     window.addEventListener('auth:unauthorized', handleUnauthorized);
     return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
   }, [navigate]);
+
+  // Refresh user on route change (dashboard, withdraw, etc.)
+  useEffect(() => {
+    const refreshOnNavigation = async () => {
+      const token = localStorage.getItem('wintrust_token');
+      if (!token || !user) return;
+      // Throttle: only refresh if last refresh > 5 seconds ago
+      const now = Date.now();
+      if (now - lastRefreshTime.current < 5000) return;
+      try {
+        const data = await me();
+        if (data.success && data.user) {
+          const updated = data.user;
+          // Check for important changes
+          if (
+            user.isLocked !== updated.isLocked ||
+            user.hasPaidTax !== updated.hasPaidTax ||
+            user.hasPaidUnfreeze !== updated.hasPaidUnfreeze ||
+            user.isFrozen !== updated.isFrozen ||
+            user.balance !== updated.balance
+          ) {
+            setUser(updated);
+            lastRefreshTime.current = now;
+          }
+        }
+      } catch (err) {
+        // ignore
+      }
+    };
+    refreshOnNavigation();
+  }, [location.pathname, user]);
+
+  // Poll for user updates every 10 seconds (faster)
+  useEffect(() => {
+    if (!user) return;
+    refreshInterval.current = setInterval(async () => {
+      try {
+        const token = localStorage.getItem('wintrust_token');
+        if (!token) return;
+        const data = await me();
+        if (data.success && data.user) {
+          const updated = data.user;
+          if (
+            user.isLocked !== updated.isLocked ||
+            user.hasPaidTax !== updated.hasPaidTax ||
+            user.hasPaidUnfreeze !== updated.hasPaidUnfreeze ||
+            user.isFrozen !== updated.isFrozen ||
+            user.balance !== updated.balance
+          ) {
+            setUser(updated);
+          }
+        }
+      } catch (err) {
+        // ignore
+      }
+    }, 10000); // 10 seconds
+
+    return () => {
+      if (refreshInterval.current) {
+        clearInterval(refreshInterval.current);
+      }
+    };
+  }, [user]);
+
+  // Refresh on window focus
+  useEffect(() => {
+    const handleFocus = async () => {
+      const token = localStorage.getItem('wintrust_token');
+      if (!token || !user) return;
+      try {
+        const data = await me();
+        if (data.success && data.user) {
+          const updated = data.user;
+          if (
+            user.isLocked !== updated.isLocked ||
+            user.hasPaidTax !== updated.hasPaidTax ||
+            user.hasPaidUnfreeze !== updated.hasPaidUnfreeze ||
+            user.isFrozen !== updated.isFrozen ||
+            user.balance !== updated.balance
+          ) {
+            setUser(updated);
+          }
+        }
+      } catch (err) {
+        // ignore
+      }
+    };
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [user]);
+
+  const refreshUser = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('wintrust_token');
+      if (!token) return null;
+      const data = await me();
+      if (data.success && data.user) {
+        setUser(data.user);
+        return data.user;
+      }
+      return null;
+    } catch (err) {
+      return null;
+    }
+  }, []);
 
   const login = useCallback(async (identifier, password) => {
     try {
@@ -86,6 +193,9 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem('wintrust_token');
       setUser(null);
       setNewlyRegistered(false);
+      if (refreshInterval.current) {
+        clearInterval(refreshInterval.current);
+      }
       navigate('/');
       toast.success('Logged out successfully');
     }
@@ -98,6 +208,7 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout: logoutUser,
+    refreshUser,
     newlyRegistered,
     setNewlyRegistered,
     isAuthenticated: !!user,

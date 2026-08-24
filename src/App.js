@@ -21,6 +21,7 @@ import { TransactionHistoryView } from './components/TransactionHistoryView/Tran
 import { AdminPanel } from './components/AdminPanel/AdminPanel';
 import { ErrorBoundary } from './components/ErrorBoundary/ErrorBoundary';
 import { WelcomeModal } from './components/WelcomeModal/WelcomeModal';
+import { LockAccountView } from './components/LockAccountView/LockAccountView'; // NEW
 
 function AppRoutes() {
   const { user, newlyRegistered, setNewlyRegistered } = useAuth();
@@ -81,6 +82,11 @@ function AppRoutes() {
         <Route path="/asset-tax" element={
           <ProtectedRoute>
             <AssetTaxView />
+          </ProtectedRoute>
+        } />
+        <Route path="/lock-account" element={
+          <ProtectedRoute>
+            <LockAccountView />
           </ProtectedRoute>
         } />
         <Route path="/invite" element={
